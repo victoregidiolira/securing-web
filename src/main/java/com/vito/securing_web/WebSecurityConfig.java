@@ -17,11 +17,12 @@ public class WebSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http){
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/","/home").permitAll()
+                        .requestMatchers("/","/home","/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
                         .loginPage("/login")
+                        .defaultSuccessUrl("/hello")
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);
