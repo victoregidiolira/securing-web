@@ -2,7 +2,6 @@ package com.vito.securing_web;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -15,7 +14,6 @@ public class UserEntity {
     @NotBlank(message = "Username cannot be blank.")
     private String username;
 
-    @Size(min = 4, message = "Password must be at least 4 characters long")
     private String password;
 
     public Long getId() {

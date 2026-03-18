@@ -1,7 +1,6 @@
 package com.vito.securing_web;
 
 import jakarta.validation.Valid;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,12 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class UserController {
 
-    final UserRepository userRepository;
-    final PasswordEncoder passwordEncoder;
+    final UserService userService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/register")
@@ -27,15 +25,19 @@ public class UserController {
 
     @PostMapping("/register")
     public String registerUser(@Valid UserEntity userEntity, BindingResult result){
-        if (result.hasErrors()){
-            return "register";
-        } if (userRepository.findByUsername(userEntity.getUsername()) != null){
-            result.rejectValue("username", "error.username", "Username já está em uso");
+        if (result.hasErrors()) {
             return "register";
         }
-
-        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-        userRepository.save(userEntity);
+        try {
+            userService.register(userEntity);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Password")) {
+                result.rejectValue("password", "error.password", e.getMessage());
+            } else {
+                result.rejectValue("username", "error.username", e.getMessage());
+            }
+            return "register";
+        }
         return "redirect:/login";
     }
 }
