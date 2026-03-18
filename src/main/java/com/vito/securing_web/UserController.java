@@ -1,10 +1,12 @@
 package com.vito.securing_web;
 
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class UserController {
@@ -18,22 +20,22 @@ public class UserController {
     }
 
     @GetMapping("/register")
-    public String showRegisterPage(){
+    public String showRegisterPage(Model model){
+        model.addAttribute("userEntity", new UserEntity());
         return "register";
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestParam String username,
-                               @RequestParam String password){
-        UserEntity user = new UserEntity();
+    public String registerUser(@Valid UserEntity userEntity, BindingResult result){
+        if (result.hasErrors()){
+            return "register";
+        } if (userRepository.findByUsername(userEntity.getUsername()) != null){
+            result.rejectValue("username", "error.username", "Username já está em uso");
+            return "register";
+        }
 
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-
-        userRepository.save(user);
-
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        userRepository.save(userEntity);
         return "redirect:/login";
     }
-
-
 }
