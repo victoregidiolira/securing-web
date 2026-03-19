@@ -17,7 +17,7 @@ public class WebSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http){
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/","/home","/register").permitAll()
+                        .requestMatchers("/","/home","/register","/error/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
@@ -25,7 +25,14 @@ public class WebSecurityConfig {
                         .defaultSuccessUrl("/hello")
                         .permitAll()
                 )
-                .logout(LogoutConfigurer::permitAll);
+                .logout(LogoutConfigurer::permitAll)
+                .exceptionHandling((exceptions) -> exceptions
+                        .accessDeniedPage("/error/403")
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendRedirect("/error/404"))
+
+                );
+
 
         http.userDetailsService(customUserDetailsService);
 
